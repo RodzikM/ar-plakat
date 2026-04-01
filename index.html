@@ -6,6 +6,59 @@
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
     
+    <script>
+      AFRAME.registerComponent('outline', {
+        schema: {
+          color: {type: 'color', default: '#000000'},
+          thickness: {type: 'number', default: 0.02} // Zmień tę wartość, by pogrubić lub pocienić obrys
+        },
+        init: function () {
+          // Czekamy, aż model całkowicie się załaduje
+          this.el.addEventListener('model-loaded', () => {
+            const mesh = this.el.getObject3D('mesh');
+            if (!mesh) return;
+
+            // Tworzymy materiał shadera (odwrócona skorupa)
+            const material = new THREE.ShaderMaterial({
+              uniforms: {
+                color: { value: new THREE.Color(this.data.color) },
+                thickness: { value: this.data.thickness }
+              },
+              vertexShader: `
+                uniform float thickness;
+                void main() {
+                  // Wypychamy geometrię wzdłuż jej wektorów normalnych
+                  vec3 pos = position + normal * thickness;
+                  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+                }
+              `,
+              fragmentShader: `
+                uniform vec3 color;
+                void main() {
+                  gl_FragColor = vec4(color, 1.0);
+                }
+              `,
+              side: THREE.BackSide // Ukrywa przód, pokazuje tylko tył (kluczowe dla obrysu!)
+            });
+
+            // Przeszukujemy model i nakładamy obrys na każdą jego część
+            const outlines = [];
+            mesh.traverse((node) => {
+              if (node.isMesh) {
+                const outline = new THREE.Mesh(node.geometry, material);
+                outlines.push({parent: node, outline: outline});
+              }
+            });
+            
+            // Dodajemy wygenerowany obrys do modelu
+            outlines.forEach(obj => {
+              obj.parent.add(obj.outline);
+            });
+          });
+        }
+      });
+    </script>
+
     <style>
       body {margin: 0;}
       #container {width: 100vw; height: 100vh; position: relative; overflow: hidden;}
@@ -14,7 +67,7 @@
   <body>
     <div id="container">
       
-      <a-scene mindar-image="imageTargetSrc: targets.mind; filterMinCF: 0.001; filterBeta: 0.001;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      <a-scene mindar-image="imageTargetSrc: targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         
         <a-assets>
           <a-asset-item id="myModel" src="model.glb"></a-asset-item>
@@ -26,7 +79,12 @@
         
         <a-entity mindar-image-target="targetIndex: 0">
           
-          <a-gltf-model src="#myModel" position="0 0 0" rotation="0 0 0" scale="0.1 0.1 0.1" >
+          <a-gltf-model 
+            src="#myModel" 
+            position="0 0 0" 
+            rotation="0 0 0" 
+            scale="1 1 1"
+            outline="color: #000000; thickness: 0.02"> 
           </a-gltf-model>
           
         </a-entity>
