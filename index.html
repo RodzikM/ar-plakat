@@ -66,19 +66,19 @@
 /* STYLIZACJA NASZEGO NAPISU NA EKRANIE */
       #ui-tekst {
         position: absolute;
-        bottom: 12%; /* Umieszcza napis lekko nad dolną krawędzią ekranu */
+        bottom: 12%; 
         left: 50%;
-        transform: translateX(-50%); /* Idealne wyśrodkowanie poziome */
-        z-index: 1000; /* Gwarantuje, że napis jest NAD kamerą i modelem 3D */
-        background-color: rgba(0, 0, 0, 0.7); /* Półprzezroczyste czarne tło */
-        color: white; /* Biały kolor liter */
+        transform: translateX(-50%); 
+        z-index: 1000; 
+        background-color: rgba(0, 0, 0, 0.7); 
+        color: white; 
         padding: 12px 24px;
-        border-radius: 8px; /* Zaokrąglone rogi tła */
+        border-radius: 8px; 
         font-family: Arial, sans-serif;
         font-size: 18px;
         text-align: center;
-        pointer-events: none; /* Sprawia, że napis "przepuszcza" dotyk, nie blokuje ekranu */
-        transition: opacity 0.4s ease; /* Zapewnia płynne znikanie napisu */
+        pointer-events: none; 
+        transition: opacity 0.4s ease; 
       }
     </style>
   </head>
@@ -149,11 +149,9 @@
         const targets = document.querySelectorAll('[mindar-image-target]');
         
         targets.forEach(target => {
-          // Kiedy kamera znajdzie jakikolwiek obrazek:
           target.addEventListener("targetFound", () => {
             uiTekst.style.opacity = "0"; 
           });
-          // Kiedy kamera zgubi obrazek:
           target.addEventListener("targetLost", () => {
             uiTekst.style.opacity = "1"; 
           });
