@@ -62,10 +62,31 @@
     <style>
       body {margin: 0;}
       #container {width: 100vw; height: 100vh; position: relative; overflow: hidden;}
+
+/* STYLIZACJA NASZEGO NAPISU NA EKRANIE */
+      #ui-tekst {
+        position: absolute;
+        bottom: 12%; /* Umieszcza napis lekko nad dolną krawędzią ekranu */
+        left: 50%;
+        transform: translateX(-50%); /* Idealne wyśrodkowanie poziome */
+        z-index: 1000; /* Gwarantuje, że napis jest NAD kamerą i modelem 3D */
+        background-color: rgba(0, 0, 0, 0.7); /* Półprzezroczyste czarne tło */
+        color: white; /* Biały kolor liter */
+        padding: 12px 24px;
+        border-radius: 8px; /* Zaokrąglone rogi tła */
+        font-family: Arial, sans-serif;
+        font-size: 18px;
+        text-align: center;
+        pointer-events: none; /* Sprawia, że napis "przepuszcza" dotyk, nie blokuje ekranu */
+        transition: opacity 0.4s ease; /* Zapewnia płynne znikanie napisu */
+      }
     </style>
   </head>
   <body>
     <div id="container">
+
+      <!-- NASZ NAPIS -->
+      <div id="ui-tekst">Nakieruj aparat na obrazek</div>
       
       <a-scene mindar-image="imageTargetSrc: targets.mind; filterMinCF: 0.001; filterBeta: 0.001;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
         
@@ -120,5 +141,25 @@
       </a-scene>
       
     </div>
+    
+    <!-- SKRYPT UKRYWAJĄCY NAPIS PO WYKRYCIU OBRAZKA -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        const uiTekst = document.querySelector('#ui-tekst');
+        const targets = document.querySelectorAll('[mindar-image-target]');
+        
+        targets.forEach(target => {
+          // Kiedy kamera znajdzie jakikolwiek obrazek:
+          target.addEventListener("targetFound", () => {
+            uiTekst.style.opacity = "0"; 
+          });
+          // Kiedy kamera zgubi obrazek:
+          target.addEventListener("targetLost", () => {
+            uiTekst.style.opacity = "1"; 
+          });
+        });
+      });
+    </script>
+
   </body>
 </html>
